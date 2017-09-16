@@ -196,10 +196,6 @@ public class RepositoryListContainerFragment extends Fragment implements
         }
 
         switch (mFilterType) {
-            case "starred":
-                mMainFragment = StarredRepositoryListFragment.newInstance(mUserLogin,
-                        mSortOrder, mSortDirection);
-                break;
             case "watched":
                 mMainFragment = WatchedRepositoryListFragment.newInstance(mUserLogin);
                 break;
@@ -372,7 +368,6 @@ public class RepositoryListContainerFragment extends Fragment implements
             FILTER_LOOKUP.put(R.id.filter_type_sources, "sources");
             FILTER_LOOKUP.put(R.id.filter_type_forks, "forks");
             FILTER_LOOKUP.put(R.id.filter_type_watched, "watched");
-            FILTER_LOOKUP.put(R.id.filter_type_starred, "starred");
         }
 
         public static FilterDrawerHelper create(String userLogin, boolean isOrg) {
@@ -435,9 +430,7 @@ public class RepositoryListContainerFragment extends Fragment implements
         }
 
         public int getMenuResId() {
-            return TextUtils.equals(mFilterType, "starred") ? R.menu.repo_starred_sort
-                    : TextUtils.equals(mFilterType, "watched") ? 0
-                    : R.menu.repo_sort;
+            return TextUtils.equals(mFilterType, "watched") ? 0 : R.menu.repo_sort;
         }
 
         public void selectSortType(Menu menu, String order, String direction) {
