@@ -9,6 +9,7 @@ import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.service.NotificationService;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,6 +41,16 @@ public class NotificationListLoader extends BaseLoader<NotificationListLoadResul
     private final boolean mAll;
     private final boolean mParticipating;
 
+    public static List<Notification> loadNotifications(boolean all,
+            boolean participating) throws IOException {
+        NotificationService notificationService = (NotificationService)
+                Gh4Application.get().getService(Gh4Application.NOTIFICATION_SERVICE);
+        List<Notification> notifications =
+                notificationService.getNotifications(all, participating);
+        Collections.sort(notifications, SORTER);
+        return notifications;
+    }
+
     public NotificationListLoader(Context context, boolean all, boolean participating) {
         super(context);
         mAll = all;
@@ -48,11 +59,7 @@ public class NotificationListLoader extends BaseLoader<NotificationListLoadResul
 
     @Override
     protected NotificationListLoadResult doLoadInBackground() throws Exception {
-        NotificationService notificationService = (NotificationService)
-                Gh4Application.get().getService(Gh4Application.NOTIFICATION_SERVICE);
-        List<Notification> notifications =
-                notificationService.getNotifications(mAll, mParticipating);
-        Collections.sort(notifications, SORTER);
+        List<Notification> notifications = loadNotifications(mAll, mParticipating);
 
         Repository previousRepository = null;
         List<NotificationHolder> result = new ArrayList<>();
