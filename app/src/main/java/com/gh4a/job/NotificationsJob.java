@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 public class NotificationsJob extends Job {
     private static final String CHANNEL_GITHUB_NOTIFICATIONS = "channel_notifications";
     private static final String GROUP_ID_GITHUB = "github_notifications";
-    private static final int ID_SUMMARY = 1;
+    private static final int NOTIFICATION_ID_BASE = 10000;
     public static final String TAG = "job_notifications";
 
     public static void scheduleJob(int intervalMinutes) {
@@ -92,8 +92,8 @@ public class NotificationsJob extends Job {
             int accentColor = UiUtils.resolveColor(getContext(), R.attr.colorAccent);
 
             showSummaryNotification(notificationManager, notifications.size(), accentColor);
-            for (Notification notification : notifications) {
-                showSingleNotification(notificationManager, accentColor, notification);
+            for (int i = 0; i < notifications.size(); i++) {
+                showSingleNotification(notificationManager, accentColor, notifications.get(i), i);
             }
         } catch (IOException e) {
             return Result.FAILURE;
@@ -103,7 +103,7 @@ public class NotificationsJob extends Job {
     }
 
     private void showSingleNotification(NotificationManagerCompat notificationManager,
-            int accentColor, Notification notification) {
+            int accentColor, Notification notification, int index) {
         Repository repository = notification.getRepository();
         User owner = repository.getOwner();
         String title = owner.getLogin() + "/" + repository.getName();
@@ -132,13 +132,7 @@ public class NotificationsJob extends Job {
             builder.setContentIntent(pendingIntent);
         }
 
-        int id = ID_SUMMARY + 1;
-        try {
-            id = Integer.parseInt(notification.getId());
-        } catch (NumberFormatException e) {
-            // ignored
-        }
-        notificationManager.notify(id, builder.build());
+        notificationManager.notify(NOTIFICATION_ID_BASE + index, builder.build());
     }
 
     private void showSummaryNotification(NotificationManagerCompat notificationManager,
@@ -149,7 +143,7 @@ public class NotificationsJob extends Job {
                         numNotifications);
         PendingIntent contentIntent = PendingIntent.getActivity(getContext(), 0,
                 HomeActivity.makeIntent(getContext(), R.id.notifications), 0);
-        notificationManager.notify(ID_SUMMARY, new NotificationCompat.Builder(
+        notificationManager.notify(NOTIFICATION_ID_BASE, new NotificationCompat.Builder(
                 getContext(), CHANNEL_GITHUB_NOTIFICATIONS)
                 .setSmallIcon(R.drawable.octodroid)
                 .setGroup(GROUP_ID_GITHUB)
