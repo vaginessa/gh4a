@@ -81,19 +81,18 @@ public class NotificationsJob extends Job {
             List<Notification> notifications =
                     NotificationListLoader.loadNotifications(false, false);
 
-            if (notifications.isEmpty()) {
-                return Result.SUCCESS;
-            }
-
             NotificationManagerCompat notificationManager =
                     NotificationManagerCompat.from(getContext());
             notificationManager.cancelAll();
 
-            int accentColor = UiUtils.resolveColor(getContext(), R.attr.colorAccent);
+            if (!notifications.isEmpty()) {
+                int accentColor = UiUtils.resolveColor(getContext(), R.attr.colorAccent);
 
-            showSummaryNotification(notificationManager, notifications.size(), accentColor);
-            for (int i = 0; i < notifications.size(); i++) {
-                showSingleNotification(notificationManager, accentColor, notifications.get(i), i);
+                showSummaryNotification(notificationManager, notifications.size(), accentColor);
+                for (int i = 0; i < notifications.size(); i++) {
+                    showSingleNotification(notificationManager,
+                            accentColor, notifications.get(i), i);
+                }
             }
         } catch (IOException e) {
             return Result.FAILURE;
