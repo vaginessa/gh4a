@@ -518,4 +518,5 @@
     <string name="wiki_print_document_title">Wiki page %1$s in %2$s/%3$s</string>
 
     <string name="repository_owner_avatar">Repository owner avatar</string>
+    <string name="deselect">Deselect</string>
 </resources>

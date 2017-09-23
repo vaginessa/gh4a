@@ -33,4 +33,7 @@
     <dimen name="divider_span_height">1dp</dimen>
 
     <dimen name="code_diff_padding">8dp</dimen>
+
+    <dimen name="pager_dialog_width">336dp</dimen>
+    <dimen name="pager_dialog_height">448dp</dimen>
 </resources>

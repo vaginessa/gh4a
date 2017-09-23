@@ -18,6 +18,8 @@ package com.gh4a.fragment;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.RecyclerView;
 
@@ -82,9 +84,14 @@ public class IssueMilestoneListFragment extends ListDataBaseFragment<Milestone> 
 
     @Override
     public void onItemClick(Milestone milestone) {
-        startActivityForResult(IssueMilestoneEditActivity.makeEditIntent(
-                getActivity(), mRepoOwner, mRepoName, milestone, mFromPullRequest),
-                REQUEST_EDIT_MILESTONE);
+        Fragment parentFragment = getParentFragment();
+        if (parentFragment instanceof SelectionCallback) {
+            ((SelectionCallback) parentFragment).onMilestoneSelected(milestone);
+        } else {
+            startActivityForResult(IssueMilestoneEditActivity.makeEditIntent(
+                    getActivity(), mRepoOwner, mRepoName, milestone, mFromPullRequest),
+                    REQUEST_EDIT_MILESTONE);
+        }
     }
 
     @Override
@@ -103,5 +110,9 @@ public class IssueMilestoneListFragment extends ListDataBaseFragment<Milestone> 
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
+    }
+
+    public interface SelectionCallback {
+        void onMilestoneSelected(@Nullable Milestone milestone);
     }
 }
