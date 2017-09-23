@@ -25,7 +25,8 @@
         android:layout_alignParentBottom="true"
         android:layout_gravity="right|end"
         android:layout_toLeftOf="@+id/cancel_button"
-        android:text="@string/deselect" />
+        android:text="@string/deselect"
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/cancel_button"
