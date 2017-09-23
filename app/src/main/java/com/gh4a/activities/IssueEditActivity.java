@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
+import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -42,13 +43,14 @@ import com.gh4a.BasePagerActivity;
 import com.gh4a.Gh4Application;
 import com.gh4a.ProgressDialogTask;
 import com.gh4a.R;
+import com.gh4a.dialogs.MilestoneDialog;
+import com.gh4a.fragment.IssueMilestoneListFragment;
 import com.gh4a.loader.CollaboratorListLoader;
 import com.gh4a.loader.IsCollaboratorLoader;
 import com.gh4a.loader.IssueTemplateLoader;
 import com.gh4a.loader.LabelListLoader;
 import com.gh4a.loader.LoaderCallbacks;
 import com.gh4a.loader.LoaderResult;
-import com.gh4a.loader.MilestoneListLoader;
 import com.gh4a.loader.ProgressDialogLoaderCallbacks;
 import com.gh4a.utils.ApiHelpers;
 import com.gh4a.utils.AvatarHandler;
@@ -68,7 +70,7 @@ import java.util.List;
 
 public class IssueEditActivity extends BasePagerActivity implements
         AppBarLayout.OnOffsetChangedListener, View.OnClickListener,
-        View.OnFocusChangeListener {
+        View.OnFocusChangeListener, IssueMilestoneListFragment.SelectionCallback {
     public static Intent makeCreateIntent(Context context, String repoOwner, String repoName) {
         // can't reuse makeEditIntent here, because even a null extra counts for hasExtra()
         return new Intent(context, IssueEditActivity.class)
@@ -85,7 +87,6 @@ public class IssueEditActivity extends BasePagerActivity implements
     }
 
     private static final int REQUEST_MANAGE_LABELS = 1000;
-    private static final int REQUEST_MANAGE_MILESTONES = 1001;
 
     private static final int[] TITLES = {
         R.string.issue_body, R.string.preview, R.string.settings
@@ -95,7 +96,6 @@ public class IssueEditActivity extends BasePagerActivity implements
     private String mRepoName;
 
     private boolean mIsCollaborator;
-    private List<Milestone> mAllMilestone;
     private List<User> mAllAssignee;
     private List<Label> mAllLabels;
     private Issue mEditIssue;
@@ -126,21 +126,6 @@ public class IssueEditActivity extends BasePagerActivity implements
             mAllLabels = result;
             showLabelDialog();
             getSupportLoaderManager().destroyLoader(0);
-        }
-    };
-
-    private final LoaderCallbacks<List<Milestone>> mMilestoneCallback =
-            new ProgressDialogLoaderCallbacks<List<Milestone>>(this, this) {
-        @Override
-        protected Loader<LoaderResult<List<Milestone>>> onCreateLoader() {
-            return new MilestoneListLoader(IssueEditActivity.this,
-                    mRepoOwner, mRepoName, ApiHelpers.IssueState.OPEN);
-        }
-        @Override
-        protected void onResultReady(List<Milestone> result) {
-            mAllMilestone = result;
-            showMilestonesDialog();
-            getSupportLoaderManager().destroyLoader(1);
         }
     };
 
@@ -318,10 +303,9 @@ public class IssueEditActivity extends BasePagerActivity implements
     @Override
     public void onRefresh() {
         mAllAssignee = null;
-        mAllMilestone = null;
         mAllLabels = null;
         mIsCollaborator = false;
-        forceLoaderReload(0, 1, 2, 3);
+        forceLoaderReload(0, 2, 3);
         super.onRefresh();
     }
 
@@ -390,63 +374,24 @@ public class IssueEditActivity extends BasePagerActivity implements
                 // Require reload of labels
                 mAllLabels = null;
             }
-        } else if (requestCode == REQUEST_MANAGE_MILESTONES) {
-            if (resultCode == RESULT_OK) {
-                // Require reload of milestones
-                mAllMilestone = null;
-            }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
+    @Override
+    public void onMilestoneSelected(@Nullable Milestone milestone) {
+        mEditIssue.setMilestone(milestone);
+        updateOptionViews();
+    }
+
     private void showMilestonesDialog() {
-        if (mAllMilestone == null) {
-            getSupportLoaderManager().initLoader(1, null, mMilestoneCallback);
-        } else {
-            final String[] milestones = new String[mAllMilestone.size() + 1];
-            Milestone selectedMilestone = mEditIssue.getMilestone();
-            int selected = 0;
+        MilestoneDialog dialog = MilestoneDialog.newInstance(mRepoOwner, mRepoName);
+        getSupportFragmentManager().beginTransaction()
+                .add(dialog, "dialog_milestone")
+                .commitAllowingStateLoss();
 
-            milestones[0] = getResources().getString(R.string.issue_clear_milestone);
-            for (int i = 1; i <= mAllMilestone.size(); i++) {
-                Milestone m = mAllMilestone.get(i - 1);
-                milestones[i] = m.getTitle();
-                if (selectedMilestone != null && m.getNumber() == selectedMilestone.getNumber()) {
-                    selected = i;
-                }
-            }
-
-            final DialogInterface.OnClickListener selectCb = new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    if (which == 0) {
-                        mEditIssue.setMilestone(null);
-                    } else {
-                        mEditIssue.setMilestone(mAllMilestone.get(which - 1));
-                    }
-                    updateOptionViews();
-                    dialog.dismiss();
-                }
-            };
-
-            new AlertDialog.Builder(this)
-                    .setCancelable(true)
-                    .setTitle(R.string.issue_milestone_hint)
-                    .setSingleChoiceItems(milestones, selected, selectCb)
-                    .setNegativeButton(R.string.cancel, null)
-                    .setNeutralButton(R.string.issue_manage_milestones,
-                            new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Intent intent = IssueMilestoneListActivity.makeIntent(
-                                    IssueEditActivity.this, mRepoOwner, mRepoName,
-                                    mEditIssue.getPullRequest() != null);
-                            startActivityForResult(intent, REQUEST_MANAGE_MILESTONES);
-                        }
-                    })
-                    .show();
-        }
+        // TODO: Button to manage milestones
     }
 
     private void showAssigneesDialog() {
