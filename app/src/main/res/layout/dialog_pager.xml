@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <android.support.v4.view.ViewPager
         android:id="@+id/dialog_pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/cancel_button">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
         <android.support.design.widget.TabLayout
             android:id="@+id/dialog_pager_tabs"
@@ -17,25 +18,20 @@
 
     </android.support.v4.view.ViewPager>
 
-    <Button
-        android:id="@+id/deselect_button"
-        style="@style/Widget.AppCompat.Button.Borderless.Colored"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/button_bar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_gravity="right|end"
-        android:layout_toLeftOf="@+id/cancel_button"
-        android:text="@string/deselect"
-        android:visibility="gone" />
+        android:gravity="right|end"
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/cancel_button"
-        style="@style/Widget.AppCompat.Button.Borderless.Colored"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_gravity="right|end"
-        android:text="@string/cancel" />
+        <Button
+            android:id="@+id/cancel_button"
+            style="?buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel" />
 
-</RelativeLayout>
+    </LinearLayout>
+
+</LinearLayout>

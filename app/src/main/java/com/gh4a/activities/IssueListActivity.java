@@ -450,7 +450,7 @@ public class IssueListActivity extends BaseFragmentPagerActivity implements
 
     @Override
     public void onMilestoneSelected(@Nullable Milestone milestone) {
-        mSelectedMilestone = milestone != null ? milestone.getTitle() : "";
+        mSelectedMilestone = milestone != null ? milestone.getTitle() : null;
         invalidateFragments();
     }
 
@@ -541,7 +541,7 @@ public class IssueListActivity extends BaseFragmentPagerActivity implements
     }
 
     private void showMilestonesDialog() {
-        MilestoneDialog dialog = MilestoneDialog.newInstance(mRepoOwner, mRepoName);
+        MilestoneDialog dialog = MilestoneDialog.newInstance(mRepoOwner, mRepoName, true);
         getSupportFragmentManager().beginTransaction()
                 .add(dialog, "dialog_milestone")
                 .commitAllowingStateLoss();

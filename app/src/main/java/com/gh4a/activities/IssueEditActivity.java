@@ -386,7 +386,7 @@ public class IssueEditActivity extends BasePagerActivity implements
     }
 
     private void showMilestonesDialog() {
-        MilestoneDialog dialog = MilestoneDialog.newInstance(mRepoOwner, mRepoName);
+        MilestoneDialog dialog = MilestoneDialog.newInstance(mRepoOwner, mRepoName, false);
         getSupportFragmentManager().beginTransaction()
                 .add(dialog, "dialog_milestone")
                 .commitAllowingStateLoss();

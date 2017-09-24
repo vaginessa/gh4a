@@ -4,6 +4,10 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.gh4a.R;
 import com.gh4a.fragment.IssueMilestoneListFragment;
@@ -14,21 +18,27 @@ public class MilestoneDialog extends BasePagerDialog
         implements IssueMilestoneListFragment.SelectionCallback {
     private static final String EXTRA_OWNER = "owner";
     private static final String EXTRA_REPO = "repo";
+    private static final String EXTRA_SHOW_ANY_MILESTONE = "show_any_milestone";
     private static final int[] TITLES = new int[] {
             R.string.open, R.string.closed
     };
 
-    public static MilestoneDialog newInstance(String repoOwner, String repoName) {
+    public static MilestoneDialog newInstance(String repoOwner, String repoName,
+            boolean showAnyMilestoneButton) {
         MilestoneDialog dialog = new MilestoneDialog();
         Bundle args = new Bundle();
         args.putString(EXTRA_OWNER, repoOwner);
         args.putString(EXTRA_REPO, repoName);
+        args.putBoolean(EXTRA_SHOW_ANY_MILESTONE, showAnyMilestoneButton);
         dialog.setArguments(args);
         return dialog;
     }
 
     private String mRepoOwner;
     private String mRepoName;
+    private boolean mShowAnyMilestoneButton;
+    private Button mNoMilestoneButton;
+    private Button mAnyMilestoneButton;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -36,6 +46,30 @@ public class MilestoneDialog extends BasePagerDialog
         Bundle args = getArguments();
         mRepoOwner = args.getString(EXTRA_OWNER);
         mRepoName = args.getString(EXTRA_REPO);
+        mShowAnyMilestoneButton = args.getBoolean(EXTRA_SHOW_ANY_MILESTONE);
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
+        View view = super.onCreateView(inflater, container, savedInstanceState);
+        if (mShowAnyMilestoneButton) {
+            mAnyMilestoneButton = addButton(R.string.issue_filter_by_any_milestone);
+        }
+        mNoMilestoneButton = addButton(R.string.issue_filter_by_no_milestone);
+        return view;
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v == mNoMilestoneButton) {
+            onMilestoneSelected(new Milestone().setTitle(""));
+        } else if (v == mAnyMilestoneButton) {
+            onMilestoneSelected(null);
+        } else {
+            super.onClick(v);
+        }
     }
 
     @Override
@@ -45,21 +79,7 @@ public class MilestoneDialog extends BasePagerDialog
 
     @Override
     protected Fragment makeFragment(int position) {
-        return IssueMilestoneListFragment.newInstance(
-                mRepoOwner,
-                mRepoName,
-                position == 1,
-                false);
-    }
-
-    @Override
-    protected boolean showDeselectButton() {
-        return true;
-    }
-
-    @Override
-    protected void onDeselect() {
-        onMilestoneSelected(null);
+        return IssueMilestoneListFragment.newInstance(mRepoOwner, mRepoName, position == 1, false);
     }
 
     @Override

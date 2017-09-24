@@ -10,10 +10,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
 import com.gh4a.R;
 
 public abstract class BasePagerDialog extends DialogFragment implements View.OnClickListener {
+    private LinearLayout mButtonBar;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
@@ -39,14 +42,10 @@ public abstract class BasePagerDialog extends DialogFragment implements View.OnC
             }
         });
 
+        mButtonBar = view.findViewById(R.id.button_bar);
+
         Button cancelButton = view.findViewById(R.id.cancel_button);
         cancelButton.setOnClickListener(this);
-
-        Button deselectButton = view.findViewById(R.id.deselect_button);
-        if (showDeselectButton()) {
-            deselectButton.setVisibility(View.VISIBLE);
-            deselectButton.setOnClickListener(this);
-        }
 
         return view;
     }
@@ -61,22 +60,26 @@ public abstract class BasePagerDialog extends DialogFragment implements View.OnC
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.cancel_button:
-                dismiss();
-                break;
-            case R.id.deselect_button:
-                onDeselect();
-                break;
+        if (v.getId() == R.id.cancel_button) {
+            dismiss();
         }
+    }
+
+    protected Button addButton(int textResId) {
+        Button button = (Button) getLayoutInflater()
+                .inflate(R.layout.dialog_button, mButtonBar, false);
+        button.setText(textResId);
+        button.setOnClickListener(this);
+
+        mButtonBar.addView(button, mButtonBar.getChildCount() - 1);
+        if (mButtonBar.getChildCount() >= 3) {
+            mButtonBar.setOrientation(LinearLayout.VERTICAL);
+        }
+
+        return button;
     }
 
     protected abstract int[] getTabTitleResIds();
 
     protected abstract Fragment makeFragment(int position);
-
-    protected abstract boolean showDeselectButton();
-
-    protected void onDeselect() {
-    }
 }
