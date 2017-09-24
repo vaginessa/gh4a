@@ -278,9 +278,4 @@ public class PullRequestFragment extends IssueFragmentBase {
     public int getCommentEditorHintResId() {
         return R.string.pull_request_comment_hint;
     }
-
-    @Override
-    public void replyToComment(long replyToId) {
-        // Not used in this screen
-    }
 }

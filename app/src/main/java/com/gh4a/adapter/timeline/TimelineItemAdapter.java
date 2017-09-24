@@ -54,7 +54,8 @@ public class TimelineItemAdapter
         void editComment(Comment comment);
         void deleteComment(Comment comment);
         void quoteText(CharSequence text);
-        void replyToComment(long replyToId);
+        void onReplyCommentSelected(long replyToId);
+        long getSelectedReplyCommentId();
         String getShareSubject(Comment comment);
         List<Reaction> loadReactionDetailsInBackground(Comment comment) throws IOException;
         Reaction addReactionInBackground(Comment comment, String content) throws IOException;
@@ -125,8 +126,14 @@ public class TimelineItemAdapter
 
     private ReplyViewHolder.Callback mReplyCallback = new ReplyViewHolder.Callback() {
         @Override
+        public long getSelectedCommentId() {
+            return mActionCallback.getSelectedReplyCommentId();
+        }
+
+        @Override
         public void reply(long replyToId) {
-            mActionCallback.replyToComment(replyToId);
+            mActionCallback.onReplyCommentSelected(replyToId);
+            notifyDataSetChanged();
         }
     };
 
