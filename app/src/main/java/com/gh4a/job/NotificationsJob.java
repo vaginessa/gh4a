@@ -118,7 +118,8 @@ public class NotificationsJob extends Job {
                 int color = ContextCompat.getColor(getContext(), R.color.octodroid);
 
                 if ((lastIds != null && !lastIds.isEmpty()) || !added.isEmpty()) {
-                    showSummaryNotification(notificationManager, notifications, color, lastCheck);
+                    showSummaryNotification(notificationManager,
+                            notifications, color, lastCheck, !added.isEmpty());
                 }
                 for (int i = 0; i < added.size(); i++) {
                     showSingleNotification(notificationManager, color, added.get(i), lastCheck);
@@ -164,7 +165,6 @@ public class NotificationsJob extends Job {
                 .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_SUMMARY)
                 .setWhen(when)
                 .setShowWhen(true)
-                .setLocalOnly(when <= lastCheck)
                 .setColor(color)
                 .setContentTitle(title)
                 .setAutoCancel(true)
@@ -185,7 +185,8 @@ public class NotificationsJob extends Job {
     }
 
     private void showSummaryNotification(NotificationManagerCompat notificationManager,
-            List<Notification> notifications, int color, long lastCheck) {
+            List<Notification> notifications, int color, long lastCheck,
+            boolean hasNewNotification) {
         String title = getContext().getString(R.string.unread_notifications_summary_title);
         String text = getContext().getResources()
                 .getQuantityString(R.plurals.unread_notifications_summary_text,
@@ -205,22 +206,16 @@ public class NotificationsJob extends Job {
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setNumber(notifications.size());
 
-        boolean hasNewNotification = false;
         NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle(builder)
                 .setBigContentTitle(title)
                 .setSummaryText(text);
         for (Notification notification : notifications) {
             inboxStyle.addLine(notification.getSubject().getTitle());
-
-            if (notification.getUpdatedAt().getTime() > lastCheck) {
-                hasNewNotification = true;
-            }
         }
         builder.setStyle(inboxStyle);
 
         if (!hasNewNotification) {
             builder.setOnlyAlertOnce(true);
-            builder.setLocalOnly(true);
         }
 
         notificationManager.notify(0, builder.build());
