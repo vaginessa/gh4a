@@ -35,12 +35,13 @@ import java.util.Collection;
 
 public abstract class PagedDataBaseFragment<T> extends LoadingListFragmentBase implements
         RootAdapter.OnItemClickListener<T>, RootAdapter.OnScrolledToFooterListener {
+    private static final String STATE_KEY_ITERATOR_STATE = "iterator_state";
+    private static final int ID_LOADER_CONTENT = 0;
+
     private RootAdapter<T, ? extends RecyclerView.ViewHolder> mAdapter;
     private PageIteratorWithSaveableState<T> mIterator;
     private boolean mIsLoadCompleted;
     private View mLoadingView;
-
-    private static final String STATE_KEY_ITERATOR_STATE = "iterator_state";
 
     private final LoaderCallbacks<PageIteratorLoader<T>.LoadedPage> mLoaderCallback =
             new LoaderCallbacks<PageIteratorLoader<T>.LoadedPage>(this) {
@@ -65,12 +66,12 @@ public abstract class PagedDataBaseFragment<T> extends LoadingListFragmentBase i
 
         setContentShown(false);
 
-        mIterator = (PageIteratorWithSaveableState<T>) onCreateIterator();
+        recreateIterator();
         if (savedInstanceState != null) {
             mIterator.restoreState(savedInstanceState.getBundle(STATE_KEY_ITERATOR_STATE));
         }
 
-        getLoaderManager().initLoader(0, null, mLoaderCallback);
+        getLoaderManager().initLoader(ID_LOADER_CONTENT, null, mLoaderCallback);
     }
 
     @Override
@@ -87,7 +88,17 @@ public abstract class PagedDataBaseFragment<T> extends LoadingListFragmentBase i
             mAdapter.clear();
         }
         mIsLoadCompleted = false;
-        hideContentAndRestartLoaders(0);
+        hideContentAndRestartLoaders(ID_LOADER_CONTENT);
+    }
+
+    protected void recreateIterator() {
+        mIterator = (PageIteratorWithSaveableState<T>) onCreateIterator();
+    }
+
+    protected void recreateIteratorAndRefresh() {
+        recreateIterator();
+        getLoaderManager().restartLoader(ID_LOADER_CONTENT, null, mLoaderCallback);
+        onRefresh();
     }
 
     @Override
@@ -141,7 +152,7 @@ public abstract class PagedDataBaseFragment<T> extends LoadingListFragmentBase i
     public void onScrolledToFooter() {
         if (mIsLoadCompleted && mLoadingView.getVisibility() == View.VISIBLE) {
             mIsLoadCompleted = false;
-            getLoaderManager().getLoader(0).forceLoad();
+            getLoaderManager().getLoader(ID_LOADER_CONTENT).forceLoad();
         }
     }
 
