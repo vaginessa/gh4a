@@ -20,6 +20,8 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
+import android.text.SpannableStringBuilder;
+import android.text.style.TextAppearanceSpan;
 
 import com.evernote.android.job.Job;
 import com.evernote.android.job.JobManager;
@@ -208,8 +210,18 @@ public class NotificationsJob extends Job {
         NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle(builder)
                 .setBigContentTitle(title)
                 .setSummaryText(text);
-        for (Notification notification : notifications) {
-            inboxStyle.addLine(notification.getSubject().getTitle());
+        for (int i = 0; i < notifications.size() && i < 10; i++) {
+            Notification n = notifications.get(i);
+            Repository repository = n.getRepository();
+            String repoName = repository.getOwner().getLogin() + "/" + repository.getName();
+            final TextAppearanceSpan notificationPrimarySpan =
+                    new TextAppearanceSpan(getContext(), R.style.TextAppearance_NotificationEmphasized);
+            SpannableStringBuilder line = new SpannableStringBuilder(repoName)
+                    .append(" ")
+                    .append(n.getSubject().getTitle());
+            line.setSpan(notificationPrimarySpan, 0, repoName.length(),
+                    SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
+            inboxStyle.addLine(line);
         }
         builder.setStyle(inboxStyle);
 
